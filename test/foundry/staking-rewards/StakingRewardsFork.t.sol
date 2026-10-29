@@ -42,7 +42,7 @@ contract StakingRewardsForkTest is Test {
     IVault internal constant VAULT = IVault(0xB055000fbE3cc9bDE7742C583a86cc6283E3fF85);
     IRouter internal constant ROUTER = IRouter(0xa93179c0cd90B9D1569Cf20FD403a9A67540Ea4d);
     IERC20 internal constant WETH = IERC20(0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73);
-    IERC20 internal constant WIF = IERC20(0xE49A1C3033EcC6b804bc423021D3F71F1A3e0F9B);
+    IERC20 internal constant WIF = IERC20(0x5173b8eA6923c2d40267890D45C46a3480954773);
 
     uint256 internal constant CREATOR_FEE = 50e16;
 

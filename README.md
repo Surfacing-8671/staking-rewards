@@ -198,7 +198,7 @@ No owner, no pause, no withdrawal delay.
   unnamed view (`0x43000814`, likely the ERC-8056 display multiplier). A forked transfer of 1.19M WIF arrived exactly,
   with total supply unchanged: no transfer tax. The rack and treasury rely on that.
 - [ ] Robinhood Chain addresses: Vault `0xB055000fbE3cc9bDE7742C583a86cc6283E3fF85`,
-  WETH `0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73`. WIF `0xE49A1C3033EcC6b804bc423021D3F71F1A3e0F9B`.
+  WETH `0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73`. WIF `0x5173b8eA6923c2d40267890D45C46a3480954773`.
 - [ ] **RWA tokens in the index.** Check each one like WIF above: no transfer tax or rebasing. Tokenized stocks often
   have transfer restrictions (blocklists, pauses outside market hours, KYC'd holders): a paused RWA blocks swaps in
   the index, and the Vault may refuse to hold a blocklisted token. The treasury survives a failed index add (the
