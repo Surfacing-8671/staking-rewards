@@ -1,0 +1,9 @@
+node_modules/
+forge-artifacts/
+forge-cache/
+cache/
+artifacts/
+out/
+broadcast/
+.env
+.env.*

@@ -1,0 +1,23 @@
+{
+  "name": "staking-rewards",
+  "version": "0.1.0",
+  "description": "Launches Bush v3 ReClamm and weighted pools whose creator fees fund a staking rewards rack and protocol-owned liquidity",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test",
+    "test:fork": "FORK_URL=${LIVE_RPC_URL:-https://rpc.mainnet.chain.robinhood.com} forge test --match-contract StakingRewardsForkTest -vv",
+    "gas": "forge test --match-contract StakingRewardsProtocolFeeTest --gas-report"
+  },
+  "devDependencies": {
+    "@bush.fi/v3-interfaces": "1.0.2",
+    "@bush.fi/v3-pool-utils": "1.0.2",
+    "@bush.fi/v3-pool-weighted": "1.1.1",
+    "@bush.fi/v3-solidity-utils": "1.0.1",
+    "@bush.fi/v3-vault": "1.0.2",
+    "@openzeppelin/contracts": "5.4.0",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.7",
+    "permit2": "github:Uniswap/permit2#cc56ad0f3439c502c246fc5cfcc3db92bb8b7219"
+  }
+}

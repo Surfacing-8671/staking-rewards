@@ -1,0 +1,42 @@
+[profile.default]
+src = 'contracts'
+out = 'forge-artifacts'
+libs = ['node_modules']
+test = 'test/foundry'
+cache_path = 'forge-cache'
+allow_paths = ['node_modules/']
+# The Vault test utilities check for Hardhat artifacts to reuse (only with REUSING_HARDHAT_ARTIFACTS set).
+fs_permissions = [{ access = "read", path = "./artifacts/" }]
+remappings = [
+    'forge-std/=node_modules/forge-std/src/',
+    '@openzeppelin/=node_modules/@openzeppelin/',
+    'permit2/=node_modules/permit2/',
+    '@bush.fi/=node_modules/@bush.fi/',
+    # The published Bush packages import each other by bare package prefix.
+    'vault/=node_modules/@bush.fi/v3-vault/',
+    'solidity-utils/=node_modules/@bush.fi/v3-solidity-utils/',
+    'pool-utils/=node_modules/@bush.fi/v3-pool-utils/',
+    'pool-weighted/=node_modules/@bush.fi/v3-pool-weighted/',
+]
+optimizer = true
+optimizer_runs = 999
+solc_version = '0.8.27'
+auto_detect_solc = false
+evm_version = 'cancun'
+ignored_error_codes = [2394, 5574, 3860] # Transient storage, code size
+allow_internal_expect_revert = true
+
+[fuzz]
+runs = 10000
+max_test_rejects = 60000
+
+# Stateful tests (StakingRewardsInvariants.t.sol): `runs` random sequences of `depth` operations each. Every operation
+# goes through the Vault, so keep runs x depth in the thousands, not Foundry's default 256 x 500.
+[invariant]
+runs = 128
+depth = 64
+
+[profile.intense.fuzz]
+verbosity = 3
+runs = 100000
+max_test_rejects = 600000
