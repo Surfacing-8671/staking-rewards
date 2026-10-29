@@ -65,7 +65,8 @@ struct StakingRewardsWeightedParams {
  * @notice Launches staking rewards pools: standard ReClamm or weighted pools, created through their own factories, whose pool
  * creator is one shared treasury. The treasury turns their creator fees into rewards for one staking rack (of one
  * token, e.g., $WIF), paid in the BPT of every approved index pool, and into locked liquidity.
- * @dev The launcher deploys the treasury (which deploys the rack) on construction, and is the only account that can
+ * @dev The launcher deploys the treasury (which deploys the rack) on construction; the curator sets the rack's staking
+ * token later, through the treasury. The launcher is the only account that can
  * register pools with it. Each launch creates the pool with the treasury as pool creator, no pause manager and no swap
  * fee manager (so its swap fee is fixed), then registers it, and the treasury sets its creator fee right away: the
  * pool is registered with the Vault, which is all the fee controller needs, and initialization keeps the fee.
@@ -109,13 +110,12 @@ contract StakingRewardsLauncher {
     /**
      * @param reClammFactory_ The ReClamm pool factory
      * @param weightedFactory_ The weighted pool factory (of the same Vault)
-     * @param stakingToken The token the rack stakes (e.g., $WIF)
-     * @param curator The account that approves index pools and launches self-rewarding pools
+     * @param curator The account that sets the rack's staking token, approves index pools and launches self-rewarding
+     * pools
      */
     constructor(
         ReClammPoolFactory reClammFactory_,
         WeightedPoolFactory weightedFactory_,
-        IERC20 stakingToken,
         address curator
     ) {
         IVault vault_ = reClammFactory_.getVault();
@@ -124,7 +124,7 @@ contract StakingRewardsLauncher {
         vault = vault_;
         reClammFactory = reClammFactory_;
         weightedFactory = weightedFactory_;
-        treasury = new StakingRewardsTreasury(vault_, stakingToken, curator);
+        treasury = new StakingRewardsTreasury(vault_, curator);
     }
 
     /// @notice The staking rack of the treasury.

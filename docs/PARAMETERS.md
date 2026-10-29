@@ -1,9 +1,10 @@
 # StakingRewardsLauncher — Parameters
 
-Constructor: `(reClammFactory, weightedFactory, stakingToken, curator)`. Both factories must use the same Vault
-(`WrongFactoryVault`). It deploys the one `StakingRewardsTreasury` (which deploys the one `StakingRewardsRack`, staking
-`stakingToken`, e.g. WIF); the `curator` approves index pools with `treasury.allowIndexPool`, and launches
-self-rewarding pools.
+Constructor: `(reClammFactory, weightedFactory, curator)`. Both factories must use the same Vault
+(`WrongFactoryVault`). It deploys the one `StakingRewardsTreasury` (which deploys the one `StakingRewardsRack`). The
+`curator` sets the rack's staking token (e.g. WIF) once with `treasury.setStakingToken` (until then `stake` reverts with
+`StakingTokenNotSet`; it can't be zero or an index pool's BPT), approves index pools with `treasury.allowIndexPool`,
+and launches self-rewarding pools.
 
 - `createReClammPool(StakingRewardsParams params, StakingRewardsReClammParams reClammParams, address indexPool, bytes32 salt) → pool`
 - `createWeightedPool(StakingRewardsParams params, StakingRewardsWeightedParams weightedParams, address indexPool, bytes32 salt) → pool`

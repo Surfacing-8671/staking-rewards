@@ -19,7 +19,7 @@ import { StakingRewardsRack } from "./StakingRewardsRack.sol";
  * @notice The one treasury behind every staking rewards pool of a launcher: the pool creator of each. On `harvest(pool)`, it
  * turns `stakerShare` of that pool's new fees into BPT of the pool's index pool (e.g., WIF, WETH and RWA tokens),
  * streamed to the stakers of the rack, and adds the rest to that pool as protocol-owned liquidity (POL).
- * @dev The rack stakes one token (e.g., $WIF) and pays every approved index pool's BPT as a separate reward stream.
+ * @dev The rack stakes one token (e.g., $WIF), which the curator sets once after deployment, and pays every approved index pool's BPT as a separate reward stream.
  *
  * Index pools are approved by the `curator`, up to the rack's `MAX_REWARD_TOKENS`; each becomes a reward token. A
  * staking rewards pool can only be launched with an approved index pool that holds all of its tokens, so the curator also
@@ -141,7 +141,7 @@ contract StakingRewardsTreasury is ReentrancyGuardTransient {
     /// @notice Only the launcher can register pools.
     error SenderIsNotLauncher();
 
-    /// @notice Only the curator can approve index pools.
+    /// @notice Only the curator can set the staking token and approve index pools.
     error SenderIsNotCurator();
 
     /// @notice Only the Vault can call back into the treasury.
@@ -173,15 +173,14 @@ contract StakingRewardsTreasury is ReentrancyGuardTransient {
 
     /**
      * @param vault_ The Bush Vault
-     * @param stakingToken The token the rack stakes (e.g., $WIF)
-     * @param curator_ The account that approves index pools
+     * @param curator_ The account that sets the staking token and approves index pools
      */
-    constructor(IVault vault_, IERC20 stakingToken, address curator_) {
+    constructor(IVault vault_, address curator_) {
         vault = vault_;
         feeController = vault_.getProtocolFeeController();
         launcher = msg.sender;
         curator = curator_;
-        rack = new StakingRewardsRack(stakingToken);
+        rack = new StakingRewardsRack();
     }
 
     /********************************************************
@@ -204,6 +203,15 @@ contract StakingRewardsTreasury is ReentrancyGuardTransient {
     /********************************************************
                     Curator and launcher functions
     ********************************************************/
+
+    /**
+     * @notice Sets the token the rack stakes (e.g., $WIF). Nobody can stake until then.
+     * @dev Once only, and it can't be an approved index pool (the rack refuses a reward token).
+     */
+    function setStakingToken(IERC20 token) external {
+        require(msg.sender == curator, SenderIsNotCurator());
+        rack.setStakingToken(token);
+    }
 
     /**
      * @notice Approves an index pool: staking rewards pools may use it, and its BPT becomes a reward token of the rack.

@@ -109,9 +109,11 @@ abstract contract BaseStakingRewardsTest is BaseVaultTest {
         weightedFactory = new WeightedPoolFactory(vault, 365 days, "Weighted Factory v1", "Weighted Pool v1");
         ReClammPoolHelper helper = new ReClammPoolHelper(vault);
         reClammFactory = new ReClammPoolFactory(vault, helper, 365 days, "ReClamm Factory v1", "ReClamm Pool v1");
-        launcher = new StakingRewardsLauncher(reClammFactory, weightedFactory, wif, admin);
+        launcher = new StakingRewardsLauncher(reClammFactory, weightedFactory, admin);
         treasury = launcher.treasury();
         rack = treasury.rack();
+        vm.prank(admin);
+        treasury.setStakingToken(wif);
         vm.label(address(launcher), "staking rewards launcher");
         vm.label(address(treasury), "treasury");
         vm.label(address(rack), "rack");

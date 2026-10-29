@@ -36,7 +36,9 @@ max_test_rejects = 60000
 runs = 128
 depth = 64
 
-[profile.intense.fuzz]
+[profile.intense]
 verbosity = 3
+
+[profile.intense.fuzz]
 runs = 100000
 max_test_rejects = 600000

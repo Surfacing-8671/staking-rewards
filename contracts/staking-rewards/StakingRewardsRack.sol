@@ -17,6 +17,7 @@ import { ReentrancyGuardTransient } from "@bush.fi/v3-solidity-utils/contracts/o
  * Reliability rules:
  * - Staking and withdrawing never transfer a reward token, so a reward token that can't be transferred never traps a
  *   stake. Rewards are claimed separately, all at once (`getReward()`) or one token at a time (`getReward(token)`).
+ * - The treasury sets the staking token once (for its curator), after deployment; until then nobody can stake.
  * - Only the treasury adds reward tokens, at most `MAX_REWARD_TOKENS` (every stake, withdraw and claim loops over
  *   them), and they are never removed: a finished stream just stops.
  * - Everything owed in each token (the stream not yet earned, rewards earned but not claimed, and unallocated) is
@@ -49,8 +50,10 @@ contract StakingRewardsRack is ReentrancyGuardTransient {
 
     uint256 internal constant _PRECISION = 1e18;
 
-    IERC20 public immutable stakingToken;
     address public immutable treasury;
+
+    /// @notice Set once by the treasury; zero until then.
+    IERC20 public stakingToken;
 
     uint256 public totalStaked;
     mapping(address account => uint256 amount) public balanceOf;
@@ -61,6 +64,7 @@ contract StakingRewardsRack is ReentrancyGuardTransient {
     mapping(IERC20 token => mapping(address account => uint256 paid)) public userRewardPerTokenPaid;
     mapping(IERC20 token => mapping(address account => uint256 amount)) public rewards;
 
+    event StakingTokenSet(IERC20 indexed token);
     event Staked(address indexed account, uint256 amount);
     event Withdrawn(address indexed account, uint256 amount);
     event RewardTokenAdded(IERC20 indexed token);
@@ -70,6 +74,15 @@ contract StakingRewardsRack is ReentrancyGuardTransient {
 
     /// @notice Only the treasury can add reward tokens and start streams.
     error SenderIsNotTreasury();
+
+    /// @notice The staking token was already set.
+    error StakingTokenAlreadySet();
+
+    /// @notice The staking token is not set yet.
+    error StakingTokenNotSet();
+
+    /// @notice The staking token is zero, or is a reward token.
+    error InvalidStakingToken(IERC20 token);
 
     /// @notice The token is not a reward token.
     error NotRewardToken(IERC20 token);
@@ -86,8 +99,7 @@ contract StakingRewardsRack is ReentrancyGuardTransient {
     /// @notice Staking or withdrawing zero.
     error ZeroAmount();
 
-    constructor(IERC20 stakingToken_) {
-        stakingToken = stakingToken_;
+    constructor() {
         treasury = msg.sender;
     }
 
@@ -150,6 +162,7 @@ contract StakingRewardsRack is ReentrancyGuardTransient {
 
     function stake(uint256 amount) external nonReentrant updateReward(msg.sender) {
         require(amount > 0, ZeroAmount());
+        require(address(stakingToken) != address(0), StakingTokenNotSet());
 
         totalStaked += amount;
         balanceOf[msg.sender] += amount;
@@ -190,6 +203,16 @@ contract StakingRewardsRack is ReentrancyGuardTransient {
     /********************************************************
                         Treasury functions
     ********************************************************/
+
+    /// @notice Sets the staking token. It can never be changed.
+    function setStakingToken(IERC20 token) external onlyTreasury {
+        require(address(stakingToken) == address(0), StakingTokenAlreadySet());
+        require(address(token) != address(0) && isRewardToken[token] == false, InvalidStakingToken(token));
+
+        stakingToken = token;
+
+        emit StakingTokenSet(token);
+    }
 
     /// @notice Adds a reward token. It can never be removed.
     function addRewardToken(IERC20 token) external onlyTreasury {

@@ -71,8 +71,9 @@ contract StakingRewardsForkTest is Test {
 
         WeightedPoolFactory weightedFactory = new WeightedPoolFactory(VAULT, 365 days, "", "");
         ReClammPoolFactory reClammFactory = new ReClammPoolFactory(VAULT, new ReClammPoolHelper(VAULT), 365 days, "", "");
-        launcher = new StakingRewardsLauncher(reClammFactory, weightedFactory, WIF, address(this));
+        launcher = new StakingRewardsLauncher(reClammFactory, weightedFactory, address(this));
         treasury = launcher.treasury();
+        treasury.setStakingToken(WIF);
 
         // A bare 50/50 WIF/WETH index.
         IERC20[] memory indexTokens = new IERC20[](2);

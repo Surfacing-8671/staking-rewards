@@ -8,6 +8,8 @@
     "build": "forge build",
     "test": "forge test",
     "test:fork": "FORK_URL=${LIVE_RPC_URL:-https://rpc.mainnet.chain.robinhood.com} forge test --match-contract StakingRewardsForkTest -vv",
+    "deploy": "forge script script/DeployStakingRewards.s.sol --rpc-url ${RPC_URL:-https://rpc.mainnet.chain.robinhood.com}",
+    "verify": "script/verify.sh",
     "gas": "forge test --match-contract StakingRewardsProtocolFeeTest --gas-report"
   },
   "devDependencies": {

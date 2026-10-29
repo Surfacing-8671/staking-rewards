@@ -78,7 +78,42 @@ abstract contract StakingRewardsTest is BaseStakingRewardsTest {
             ""
         );
         vm.expectRevert(abi.encodeWithSelector(StakingRewardsLauncher.WrongFactoryVault.selector, address(otherWeighted)));
-        new StakingRewardsLauncher(reClammFactory, otherWeighted, wif, admin);
+        new StakingRewardsLauncher(reClammFactory, otherWeighted, admin);
+    }
+
+    function testStakingTokenSetOnceByCurator() public {
+        vm.expectRevert(StakingRewardsTreasury.SenderIsNotCurator.selector);
+        treasury.setStakingToken(pair);
+
+        vm.prank(admin);
+        vm.expectRevert(StakingRewardsRack.StakingTokenAlreadySet.selector);
+        treasury.setStakingToken(pair);
+
+        vm.expectRevert(StakingRewardsRack.SenderIsNotTreasury.selector);
+        rack.setStakingToken(pair);
+    }
+
+    function testStakingTokenMustBeSetAndValid() public {
+        StakingRewardsLauncher fresh = new StakingRewardsLauncher(reClammFactory, weightedFactory, admin);
+        StakingRewardsTreasury freshTreasury = fresh.treasury();
+        StakingRewardsRack freshRack = freshTreasury.rack();
+        assertEq(address(freshRack.stakingToken()), address(0), "staking token set on deploy");
+
+        vm.prank(alice);
+        vm.expectRevert(StakingRewardsRack.StakingTokenNotSet.selector);
+        freshRack.stake(1e18);
+
+        vm.startPrank(admin);
+        vm.expectRevert(abi.encodeWithSelector(StakingRewardsRack.InvalidStakingToken.selector, address(0)));
+        freshTreasury.setStakingToken(IERC20(address(0)));
+
+        freshTreasury.allowIndexPool(indexA);
+        vm.expectRevert(abi.encodeWithSelector(StakingRewardsRack.InvalidStakingToken.selector, indexA));
+        freshTreasury.setStakingToken(IERC20(indexA));
+
+        freshTreasury.setStakingToken(wif);
+        vm.stopPrank();
+        assertEq(address(freshRack.stakingToken()), address(wif), "staking token");
     }
 
     function testRegisterOnlyLauncherAndOnce() public {

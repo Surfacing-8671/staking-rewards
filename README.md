@@ -24,6 +24,21 @@ npm run test:fork   # against the live Robinhood Chain Vault (set LIVE_RPC_URL t
 npm run gas   # gas report
 ```
 
+## Deploy and verify
+
+The launcher takes the deployed ReClamm and weighted factories; its constructor deploys the treasury and the rack.
+
+Fill in `.env` (gitignored): `RPC_URL`, `ETHERSCAN_API_KEY` (Robinscan, Etherscan API V2), `PRIVATE_KEY` (or leave it
+empty and pass `--account <keystore>`), `RECLAMM_FACTORY`, `WEIGHTED_FACTORY` and `CURATOR` (a multisig).
+
+```sh
+npm run deploy                         # dry run
+npm run deploy -- --broadcast          # deploy
+npm run verify -- <launcher address>   # launcher, treasury and rack on Robinscan
+```
+
+Then the curator calls `treasury.setStakingToken(WIF)` and `treasury.allowIndexPool(index)` for each index.
+
 ## Layout
 
 - `contracts/staking-rewards/`: `StakingRewardsLauncher`, `StakingRewardsTreasury`, `StakingRewardsRack`.
@@ -67,8 +82,9 @@ No emissions: if nobody trades, nobody earns.
 ### `StakingRewardsLauncher`
 
 The constructor takes the existing `ReClammPoolFactory` and `WeightedPoolFactory` (same Vault, or
-`WrongFactoryVault`), the staking token (WIF) and a `curator`, and deploys the treasury (which deploys the rack). The
-launcher is the only account that can register pools with the treasury.
+`WrongFactoryVault`) and a `curator`, and deploys the treasury (which deploys the rack). The curator then sets the
+rack's staking token (WIF) once, with `treasury.setStakingToken`; until then nobody can stake. The launcher is the only
+account that can register pools with the treasury.
 
 - `createReClammPool(StakingRewardsParams, StakingRewardsReClammParams, indexPool, salt) → pool`. Prices are given as the base
   token's price in the quote token, whichever way the tokens sort; the launcher inverts them when the base token is
@@ -206,6 +222,7 @@ No owner, no pause, no withdrawal delay.
   shown through an ERC-8056 display multiplier don't change raw balances, so the weighted maths is unaffected.
 - [ ] Index pool depth and fee: keep it deep relative to a day's staker share, or the cap (the index's fee, at most
   1%) holds most of it in reserve.
-- [ ] Deployment script (the launcher takes the deployed ReClamm and weighted factories). Fork test: done.
+- [x] Deployment script: `script/DeployStakingRewards.s.sol`, verification: `script/verify.sh` (dry-run on a fork).
+- [ ] Deployed ReClamm and weighted factory addresses on Robinhood Chain.
 - [ ] Seeding: who provides the initial WIF/WETH for the staking rewards pool, and WIF/WETH/RWAs for the index, and how much.
 - [ ] Audit (treasury and rack).
